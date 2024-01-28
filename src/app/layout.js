@@ -9,9 +9,15 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
-  );
+
+	return (
+		<html lang="en">
+			<body className={inter.className}>
+				{children}
+				<footer className="fixed bottom-0 w-full bg-red-800">
+					<p>Um projeto de estudo feito por Matheus Caldas</p>
+				</footer>
+			</body>
+		</html>
+	);
 }
