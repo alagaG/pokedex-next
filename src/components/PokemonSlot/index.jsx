@@ -1,13 +1,14 @@
 'use client'
 
 import Image from "next/image"
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 export default function PokemonSlot({ pokemon }) {
 	const [ data, setData ] = useState()
 	const { id, name } = pokemon
 
-	fetch(`https://pokeapi.co/api/v2/pokemon/${name}`).then((response) => 
+
+	fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then((response) => 
 		response.json().then((data) => {
 			setData(data)
 		})
