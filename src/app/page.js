@@ -10,13 +10,14 @@ export default function Home() {
 	const [loading, setLoading] = useState(true)
 	const awaiting = useRef(false)
 	const pokedexData = useRef([])
-	const pokedexFilter = useRef({ name: '', nameMode: NameFilterMode.CONTAINS })
+	const pokedexFilter = useRef({ name: '', nameMode: NameFilterMode.CONTAINS, includedTypes: [], excludedTypes: [] })
+	const typesData = useRef([])
 	const visibleOffset = useRef(0)
 
 	const updateVisiblePokemon = () => {
 		const nextData = pokedexData.current.filter((entry) => {
 			const { name: pokemonName } = entry
-			const { name, nameMode } = pokedexFilter.current
+			const { name, nameMode, includedTypes, excludedTypes } = pokedexFilter.current
 			
 			if (name.length > 0) { 
 				switch (nameMode) {
@@ -35,6 +36,14 @@ export default function Home() {
 				}
 			}
 
+			if (includedTypes.length > 0) {
+				if (!includedTypes.every(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
+			}
+
+			if (excludedTypes.length > 0) {
+				if (excludedTypes.some(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
+			}
+
 			return true
 		}).slice(0, visibleOffset.current)
 		setVisiblePokedex(nextData)
@@ -45,9 +54,10 @@ export default function Home() {
 
 		awaiting.current = true
 		setLoading(true)
-		fetch(`/api/pokedex?limit=5000&offset=0`).then(
+		fetch(`/api/pokedex`).then(
 			(response) => response.json().then((data) => {
-				pokedexData.current = [...pokedexData.current, ...data.pokedex]
+				pokedexData.current = data.pokedex
+				typesData.current = data.types
 				updateVisiblePokemon()
 			}).finally(() => {
 				awaiting.current = false
@@ -76,7 +86,7 @@ export default function Home() {
 	useEffect(() => {
 		loadAll()
 		showMore()
-
+		
 		window.addEventListener('scroll', (event) => {
 			const scrollingElement = document.scrollingElement
 			const scrollPercent = (window.scrollY) / (document.scrollingElement.scrollHeight - scrollingElement.clientHeight)
@@ -89,7 +99,7 @@ export default function Home() {
 			<div className="flex flex-col gap-4 items-center font-sans font-medium">
 				<div className="fixed y-10 top-0 w-full bg-red-800">
 					<p className="text-center text-2xl">Pokedex</p>
-					<PokedexFilter onSearch={ onSearch } />
+					<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
 				</div>
 				<div className={`w-fit my-16 grid grid-cols-4 gap-5`}>
 					{visiblePokedex.map((entry) => (
