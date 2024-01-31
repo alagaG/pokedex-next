@@ -3,31 +3,64 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+	--light-light: #ffffff;
+	--light-color: #f9fafb;
+	--light-shadow: #e5e7eb;
+	--dark-light: #fc1d1d;
+	--dark-color: #000000;
+	--dark-shadow: #0c55b4;
+
+	--background-color: var(--light-color);
+  	--foreground-color: var(--dark-color);
+	--light: var(--light-light);
+	--shadow: var(--light-shadow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+dark:root {
+	--background-color: var(--dark-color);
+	--foreground-color: var(--light-color);
+	--light: var(--dark-light);
+	--shadow: var(--dark-shadow);
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@layer base {
+	body {
+		color: var(--foreground-color);
+		background: var(--background-color);
+	}
+}
+
+
+@layer components {
+	.pokemon-slot {
+		@apply flex relative size-40 m-4
+			text-zinc-400
+			flex flex-col justify-center gap-2 
+	}
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+	.text-balance {
+		text-wrap: balance;
+	}
+
+	.neumorphism-sm {
+		border-radius: 5%;
+	}
+	.neumorphism-md {
+		border-radius: 15%;
+	}
+	.neumorphism-lg {
+		border-radius: 30%;
+	}
+
+	.neumorphism-hover {
+		@apply transition-all ease-out duration-500 hover:text-zinc-400
+	}
+	.neumorphism-flat {
+		background: rgb(var(--background-rgb));
+		box-shadow:  5px 5px 10px var(--shadow),
+					-5px -5px 10px var(--light);
+	}
 }
+

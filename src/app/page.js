@@ -5,7 +5,7 @@ import Image from "next/image";
 import PokedexFilter, { NameFilterMode } from "@/components/PokedexFilter";
 
 export default function Home() {
-	const columns = 4
+	const columns = 5
 	const [visiblePokedex, setVisiblePokedex] = useState([])
 	const [loading, setLoading] = useState(true)
 	const awaiting = useRef(false)
@@ -94,19 +94,20 @@ export default function Home() {
 		})
 	}, [])
 
+	//<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
 	return (
 		<main className="py-4">
 			<div className="flex flex-col gap-4 items-center font-sans font-medium">
-				<div className="fixed y-10 top-0 w-full bg-red-800">
-					<p className="text-center text-2xl">Pokedex</p>
-					<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
-				</div>
-				<div className={`w-fit my-16 grid grid-cols-4 gap-5`}>
+				<div className={`w-fit mb-16 mt-48 grid grid-cols-5`}>
 					{visiblePokedex.map((entry) => (
 						(<PokemonSlot key={entry.id} pokemon={entry} />)
 					))}
 				</div>
 				<Image className={`animate-spin ${!loading ? 'hidden' : 'block'}`} src="/loading.png" width={182} height={182} alt="Loading" priority />
+				<div className="fixed top-0 w-full bg-red-800">
+					<p className="text-center text-2xl">Pokedex</p>
+					<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
+				</div>
 			</div>
 		</main>
 	);

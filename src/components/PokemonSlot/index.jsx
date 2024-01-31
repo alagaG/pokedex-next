@@ -7,17 +7,19 @@ export default function PokemonSlot({ pokemon }) {
 	const [ data, setData ] = useState()
 	const { id, name } = pokemon
 
-
 	fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then((response) => 
 		response.json().then((data) => {
 			setData(data)
 		})
 	)
 
-	return (<div className="w-48 h-48 flex flex-col justify-center gap-2 py-2 bg-red-600 rounded-md">
-		<p className="text-lg text-center text-black bg-white">{`${id}. ${name.replace(/^[a-z]| [a-z]g/, (letter) => letter.toUpperCase())}`}</p>
-		<div className="flex flex-none justify-center text-black bg-white">
-			<Image className={`${data ? '' : 'animate-spin'}`} src={data ? data.sprites.front_default : "/loading.png"} width={96} height={96} alt={`Default sprite for ${name}`} />
+	return (<div className="pokemon-slot group">
+		<div className="absolute hidden group-hover:block text-center inset-0">
+			<h1>{id}</h1>
+			<p>{`${name.replace(/^[a-z]| [a-z]g/, (letter) => letter.toUpperCase())}`}</p>
+		</div>
+		<div className="flex size-full p-4 neumorphism-lg neumorphism-flat neumorphism-hover group-hover:scale-75">
+			<Image className={`size-full ${data ? '' : 'animate-spin'}`} src={data ? data.sprites.other["official-artwork"].front_default : "/loading.png"} width={475} height={475} alt={`Default sprite for ${name}`} priority />
 		</div>
 	</div>)
 }
