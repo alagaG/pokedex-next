@@ -1,17 +1,16 @@
 'use client'
 
 import { useRef } from "react"
-import TypeSelector, { TypeFilterMode } from "./TypeSelector"
+import TypeFilter from "./TypeFilter"
+import { TypeFilterMode } from "./TypeButton"
+import NameFilter, { NameFilterMode } from "./NameFilter"
 
-export const NameFilterMode = {
-	CONTAINS: 0,
-	EQUALS: 1,
-	STARTS_WITH: 2,
-	ENDS_WITH: 3
+export function Filter(name="", nameMode=NameFilterMode.CONTAINS, includedTypes=[], excludedTypes=[]) {
+	return { name, nameMode, includedTypes, excludedTypes }
 }
 
-export default function PokedexFilter({ getTypeList, onSearch }) {
-	const nameFilterMode = useRef(NameFilterMode.CONTAINS)
+export default function PokedexFilter({ typeList, onSearch }) {
+	const nameFilter = useRef({ name: "", mode: NameFilterMode.CONTAINS})
 	const typeFilter = useRef([[], []])
 
 	const onNameFilterModeChange = (event) => {
@@ -21,27 +20,21 @@ export default function PokedexFilter({ getTypeList, onSearch }) {
 	}
 
 	const onSearchButtonClick = (event) => {
-		const nameFilter = document.getElementById("search-field").value
-
 		if (onSearch) {
-			onSearch({
-				name: nameFilter,
-				nameMode: nameFilterMode.current,
-				includedTypes: typeFilter.current[TypeFilterMode.INCLUDE],
-				excludedTypes: typeFilter.current[TypeFilterMode.EXCLUDE],
-			})
+			onSearch(Filter(
+				nameFilter.current.name,
+				nameFilter.current.mode,
+				typeFilter.current[TypeFilterMode.INCLUDE],
+				typeFilter.current[TypeFilterMode.EXCLUDE],
+			))
 		}
 	}
 
 	return (
-		<div className="flex flex-col">
-			<div>
-				<label htmlFor="search-field">Search: </label>
-				<input id="search-field" name="search-field" type="text" className="text-black" />
-				<TypeSelector getTypeList={ getTypeList } setTypeFilter={ (filter) => typeFilter.current = filter } />
-				<button onClick={ onNameFilterModeChange }>Change Filter - CONTAINS</button>
-			</div>
-			<button onClick={ onSearchButtonClick } >Search</button>
+		<div id="filter-panel">
+			<NameFilter setNameFilter={ (filter) => nameFilter.current = filter } />
+			<TypeFilter typeList={ typeList } setTypeFilter={ (filter) => typeFilter.current = filter } />
+			<button className="filter-button" onClick={ onSearchButtonClick } >Search</button>
 		</div>
 	)
 }

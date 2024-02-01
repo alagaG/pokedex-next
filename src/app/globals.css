@@ -3,62 +3,164 @@
 @tailwind utilities;
 
 :root {
-	--light-light: #ffffff;
-	--light-color: #f9fafb;
-	--light-shadow: #e5e7eb;
-	--dark-light: #fc1d1d;
-	--dark-color: #000000;
-	--dark-shadow: #0c55b4;
+	--light-light: #ffffff; /* white */
+	--light-color: #f3f4f6; /* gray-100 */
+	--light-shadow: #d1d5db; /* gray-300 */
+	--light-pokedex: #b91c1c; /*  */
+
+	--dark-light: #3f3f46; /* zinc-700 */
+	--dark-color: #27272a; /* zinc-800 */
+	--dark-shadow: #000000; /* black */
+	--dark-pokedex: #09090b; /*  */
+
+	--pokedex-text-color: var(--light-color);
 
 	--background-color: var(--light-color);
   	--foreground-color: var(--dark-color);
+	--pokedex-color: var(--light-pokedex);
 	--light: var(--light-light);
 	--shadow: var(--light-shadow);
 }
 
-dark:root {
+.dark {
 	--background-color: var(--dark-color);
 	--foreground-color: var(--light-color);
+	--pokedex-color: var(--dark-pokedex);
 	--light: var(--dark-light);
 	--shadow: var(--dark-shadow);
 }
 
 @layer base {
 	body {
+		@apply flex flex-col
+			w-screen h-screen max-h-screen;
 		color: var(--foreground-color);
 		background: var(--background-color);
 	}
+	main {
+		@apply flex flex-col sm:flex-row grow
+			size-full
+			font-sans font-medium
+			overflow-y-hidden;
+		background: var(--background-color);
+	}
+	header, footer {
+		@apply flex flex-row 
+			p-2 z-10;
+		background: var(--background-color);
+	}
+	header {
+		@apply justify-center
+			text-2xl sm:text-3xl font-bold;
+		box-shadow: 0 2px 5px var(--shadow);
+	}
+	footer {
+		@apply items-center
+			text-sm;
+		box-shadow: 0 -2px 5px var(--shadow);
+	}
 }
 
-
 @layer components {
+	.dark-mode-button {
+		@apply dark:invert
+	}
+
+	#entries-display {
+		@apply relative flex justify-center grow
+			overflow-x-clip overflow-y-scroll
+	}
+
+	#entries-display>#entries-grid {
+		@apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6
+	}
+
 	.pokemon-slot {
 		@apply flex relative size-40 m-4
-			text-zinc-400
-			flex flex-col justify-center gap-2 
+			flex flex-col justify-center gap-2;
+		color: var(--foreground-color); 
+	}
+
+	.pokemon-slot-info {
+		@apply absolute hidden group-hover:flex flex-col
+			z-10 inset-0
+			text-center text-lg
+	}
+
+	.pokemon-slot-info>.sprite {
+		@apply 
+			size-24 mt-auto mx-auto
+	}
+
+	.pokemon-slot-content {
+		@apply 
+			neumorphism-flat neumorphism-hover 
+			rounded-[30%]
+	}
+
+	.pokemon-slot-content>.artwork {
+		@apply
+			opacity-100 group-hover:opacity-75
+			transition-opacity ease-out duration-500
+	}
+
+	#filter-panel {
+		@apply flex flex-col
+			h-fit sm:h-full sm:basis-1/3 md:basis-1/4 lg:basis-1/5 gap-1 p-4
+			sm:overflow-clip;
+		box-shadow: 0px 5px 5px var(--shadow);
+	}
+
+	.name-filter {
+		@apply flex flex-row
+			gap-4
+	}
+
+	.name-filter-input {
+		@apply grow shrink
+			min-w-0 p-2
+			bg-[--light]
+			rounded-md 
+	}
+
+	.name-filter-mode {
+		@apply shrink-0 
+			size-fit p-1
+			rounded-md
+			dark:invert
+	}
+
+	.type-filter {
+		@apply flex sm:grid sm:grid-cols-3 justify-items-center
+			gap-4 p-4
+			overflow-x-scroll overflow-y-auto sm:overflow-auto
+	}
+
+	.type-button {
+		@apply relative shrink-0
+			size-12
+			rounded-full
+			ring-transparent ring-4 ring-offset-2 ring-offset-[--background-color]
+	}
+
+	.filter-button {
+		@apply sticky 
+			bottom-0 mt-auto 
+			bg-[--light] p-1
+			rounded-md
 	}
 }
 
 @layer utilities {
-	.text-balance {
-		text-wrap: balance;
-	}
-
-	.neumorphism-sm {
-		border-radius: 5%;
-	}
-	.neumorphism-md {
-		border-radius: 15%;
-	}
-	.neumorphism-lg {
-		border-radius: 30%;
-	}
-
 	.neumorphism-hover {
-		@apply transition-all ease-out duration-500 hover:text-zinc-400
+		@apply flex 
+			z-0 size-full p-4
+			scale-100 group-hover:scale-75
+			transition-transform ease-out duration-500;
 	}
+
 	.neumorphism-flat {
-		background: rgb(var(--background-rgb));
+		background: var(--background-color);
 		box-shadow:  5px 5px 10px var(--shadow),
 					-5px -5px 10px var(--light);
 	}

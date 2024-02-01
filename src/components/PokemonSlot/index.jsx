@@ -1,25 +1,35 @@
 'use client'
 
 import Image from "next/image"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export default function PokemonSlot({ pokemon }) {
 	const [ data, setData ] = useState()
 	const { id, name } = pokemon
 
-	fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then((response) => 
-		response.json().then((data) => {
-			setData(data)
-		})
-	)
+	useEffect(() => {
+		fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, { cache: 'no-cache' }).then((response) => 
+			response.json().then((data) => {
+				setData({
+					id: data.id,
+					name: data.name,
+					sprites: {
+						artwork: data.sprites.other['official-artwork'].front_default,
+						pixelart: data.sprites.front_default
+					}
+				})
+			})
+		)
+	})
 
-	return (<div className="pokemon-slot group">
-		<div className="absolute hidden group-hover:block text-center inset-0">
-			<h1>{id}</h1>
-			<p>{`${name.replace(/^[a-z]| [a-z]g/, (letter) => letter.toUpperCase())}`}</p>
+	return (<button id={`pokemon-slot-${id}`} name="pokemon-slot" className="pokemon-slot group">
+		<div className="pokemon-slot-info">
+			<h1 className="font-bold">{id}</h1>
+			<Image className="sprite" src={data ? data.sprites.pixelart : "/loading.png"} width={96} height={96} alt={`Front sprite of ${name}`} priority/>
+			<p className="capitalize">{name}</p>
 		</div>
-		<div className="flex size-full p-4 neumorphism-lg neumorphism-flat neumorphism-hover group-hover:scale-75">
-			<Image className={`size-full ${data ? '' : 'animate-spin'}`} src={data ? data.sprites.other["official-artwork"].front_default : "/loading.png"} width={475} height={475} alt={`Default sprite for ${name}`} priority />
+		<div className="pokemon-slot-content">
+			<Image className={`artwork ${data ? '' : 'animate-spin'}`} src={data ? data.sprites.artwork : "/loading.png"} width={128} height={128} alt={`Official artwork for ${name}`} priority />
 		</div>
-	</div>)
+	</button>)
 }

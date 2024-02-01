@@ -2,17 +2,24 @@
 import { useEffect, useRef, useState } from "react";
 import PokemonSlot from "../components/PokemonSlot";
 import Image from "next/image";
-import PokedexFilter, { NameFilterMode } from "@/components/PokedexFilter";
+import PokedexFilter, { Filter } from "@/components/PokedexFilter";
+import { NameFilterMode } from "@/components/PokedexFilter/NameFilter";
+import DarkModeButton from "@/components/DarkModeButton";
+
+function TailwindViewport(id, width) {
+	return { id, width }
+}
 
 export default function Home() {
-	const columns = 5
 	const [visiblePokedex, setVisiblePokedex] = useState([])
 	const [loading, setLoading] = useState(true)
+	const [darkMode, setDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches)
 	const awaiting = useRef(false)
 	const pokedexData = useRef([])
-	const pokedexFilter = useRef({ name: '', nameMode: NameFilterMode.CONTAINS, includedTypes: [], excludedTypes: [] })
+	const pokedexFilter = useRef(Filter())
 	const typesData = useRef([])
 	const visibleOffset = useRef(0)
+	const gridColumnCount = useRef(0)
 
 	const updateVisiblePokemon = () => {
 		const nextData = pokedexData.current.filter((entry) => {
@@ -37,11 +44,15 @@ export default function Home() {
 			}
 
 			if (includedTypes.length > 0) {
-				if (!includedTypes.every(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
+				if (!includedTypes
+					.map((simplifiedType) => typesData.current[simplifiedType.id])
+					.every(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
 			}
 
 			if (excludedTypes.length > 0) {
-				if (excludedTypes.some(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
+				if (excludedTypes
+					.map((simplifiedType) => typesData.current[simplifiedType.id])
+					.some(type => type.pokemon.some((entry) => entry.pokemon.name === pokemonName))) return false
 			}
 
 			return true
@@ -54,7 +65,7 @@ export default function Home() {
 
 		awaiting.current = true
 		setLoading(true)
-		fetch(`/api/pokedex`).then(
+		fetch(`/api/pokedex`, { cache: 'no-cache' }).then(
 			(response) => response.json().then((data) => {
 				pokedexData.current = data.pokedex
 				typesData.current = data.types
@@ -72,7 +83,7 @@ export default function Home() {
 
 	const showMore = (rows = 2) => {
 		if (loading.current) return
-		visibleOffset.current = visibleOffset.current + (columns * rows)
+		visibleOffset.current = visibleOffset.current + (gridColumnCount.current * rows)
 		updateVisiblePokemon() 
 	}
 
@@ -84,31 +95,48 @@ export default function Home() {
 	}
 	
 	useEffect(() => {
+		const getColumnCount = () => {
+			const windowWidth = window.innerWidth
+			if (windowWidth >= 1536) return 6 
+			else if (windowWidth >= 1280) return 5 
+			else if (windowWidth >= 1024) return 4 
+			else if (windowWidth >= 768) return 3 
+			else return 2 
+		}
+		gridColumnCount.current = getColumnCount()
+		window.addEventListener('resize', () => { gridColumnCount.current = getColumnCount() })
+
 		loadAll()
 		showMore()
 		
-		window.addEventListener('scroll', (event) => {
-			const scrollingElement = document.scrollingElement
-			const scrollPercent = (window.scrollY) / (document.scrollingElement.scrollHeight - scrollingElement.clientHeight)
+		const entriesDisplay = document.getElementById('entries-display')
+		entriesDisplay.addEventListener('scrollend', (event) => {
+			const scrollingElement = event.currentTarget
+			const scrollPercent = (scrollingElement.scrollTop) / (scrollingElement.scrollHeight - scrollingElement.clientHeight)
 			if (scrollPercent >= 1.0) showMore(1)
 		})
 	}, [])
 
-	//<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
 	return (
-		<main className="py-4">
-			<div className="flex flex-col gap-4 items-center font-sans font-medium">
-				<div className={`w-fit mb-16 mt-48 grid grid-cols-5`}>
-					{visiblePokedex.map((entry) => (
-						(<PokemonSlot key={entry.id} pokemon={entry} />)
-					))}
+		<body className={darkMode ? 'dark' : ''}>
+			<header>
+				<h1>Pokedex</h1>
+			</header>
+			<main>
+				<PokedexFilter typeList={ typesData.current.map((type) => { return{ id: type.id, name: type.name }}) } onSearch={ onSearch } />
+				<div id="entries-display">
+					<div id="entries-grid">
+						{visiblePokedex.map((entry) => (
+							(<PokemonSlot key={entry.id} pokemon={entry} />)
+						))}
+					</div>
+					<Image className={`m-auto animate-spin ${!loading ? 'hidden' : 'block'}`} src="/loading.png" width={182} height={182} alt="Loading" priority />
 				</div>
-				<Image className={`animate-spin ${!loading ? 'hidden' : 'block'}`} src="/loading.png" width={182} height={182} alt="Loading" priority />
-				<div className="fixed top-0 w-full bg-red-800">
-					<p className="text-center text-2xl">Pokedex</p>
-					<PokedexFilter getTypeList={ () => typesData.current } onSearch={ onSearch } />
-				</div>
-			</div>
-		</main>
+			</main>
+			<footer>
+				<p className="grow">Study project by Matheus Caldas</p>
+				<DarkModeButton startAsDark={ darkMode } onClick={ () => setDarkMode((darkMode) => !darkMode) } />
+			</footer>
+		</body>
 	);
 }
